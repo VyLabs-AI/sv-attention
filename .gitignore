@@ -44,6 +44,7 @@ mimic-iv*/
 MIMIC-IV*/
 
 # TeX build products (submitted figures and evidence remain tracked)
+view-*.pdf
 paper/*.aux
 paper/*.bbl
 paper/*.blg

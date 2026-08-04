@@ -115,6 +115,8 @@ BANNED_TEXT = {
 def _local_only(relative: str) -> bool:
     if relative in LOCAL_ONLY_NAMES:
         return True
+    if relative.startswith("view-") and relative.endswith(".pdf"):
+        return True
     if "__pycache__/" in relative or relative.endswith((".pyc", ".pyo")):
         return True
     return any(relative.startswith(prefix) for prefix in LOCAL_ONLY_PREFIXES)
