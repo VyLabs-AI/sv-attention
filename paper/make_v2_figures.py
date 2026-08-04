@@ -221,11 +221,11 @@ def deletion_evidence():
         )
 
     width = 0.24
-    right.bar(x - width, median, width, color=BLUE, label="decrement median")
-    right.bar(x, worst, width, color=GREEN, label="decrement worst")
-    right.bar(x + width, decay, width, color=RED, label="decay median")
+    right.bar(x - width, median, width, color=BLUE, label="deletion median")
+    right.bar(x, worst, width, color=GREEN, label="deletion worst")
+    right.bar(x + width, decay, width, color=RED, label="coefficient-decay median")
     right.set_yscale("log")
-    right.set_ylabel("decision-function deviation from refit")
+    right.set_ylabel("maximum gate-score error from refit")
     right.set_xticks(x, names, rotation=18, ha="right")
     right.set_title("(b) typical, worst, and decay", loc="left", weight="bold")
     right.legend(frameon=False, fontsize=8)

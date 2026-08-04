@@ -141,12 +141,12 @@ token budget.
 context, set \(C\) once, solve the gate in fp64, and remove a token two ways:
 (i) the C\&P reverse path and (ii) a retained-set refit under that same \(C\).
 Recomputing \(C\) from the smaller set would define a different problem. We
-compare their decision functions
-$f(x) = 2\sum_i \alpha_i \kappa(x, x_i) - \rho$ on probes spanning the retained, forgotten,
-and jittered points, and report the maximum deviation. We use the decision function rather
-than the raw coefficients because on exact duplicates the SVDD optimum is non-unique
-($\alpha$ and the partition may differ while the function is identical), so the function is
-the correct equivalence test. The decay baseline scales the forgotten token's coefficient by $\gamma$ and
+compare the gate scores \(s(x)\) from Equation~\ref{eq:gate-score} on retained,
+removed, and perturbed probes and report the maximum difference. We use the
+score rather than raw coefficients because on exact duplicates the SVDD optimum
+is non-unique (\(\alpha\) and the partition may differ while the score agrees),
+so it is the more allocation-invariant comparison. The decay baseline scales
+the removed token's coefficient by \(\gamma\) and
 is evaluated on the same metric. Regimes are Gaussian keys (\(d=6\)),
 redundant near-duplicates, real MIMIC-IV hourly vitals, and a trained model's
 learned key projections; \(300\) attempts each. The report stores all
