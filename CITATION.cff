@@ -9,7 +9,7 @@ authors:
     given-names: Vishwajith
     affiliation: "Vy Labs, Inc."
     email: "vish@vylabs.ai"
-repository-code: "https://github.com/vishrmsh/sv-attention"
+repository-code: "https://github.com/VyLabs-AI/sv-attention"
 license: Apache-2.0
 preferred-citation:
   type: article

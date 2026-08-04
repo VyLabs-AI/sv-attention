@@ -5,8 +5,7 @@ Official code and arXiv source for:
 **Forgetful Attention: An Auditable Support-Vector Memory for Selective
 Retention and Verified Deletion**
 
-[arXiv:2607.12204](https://arxiv.org/abs/2607.12204) ·
-[GitHub](https://github.com/vishrmsh/sv-attention)
+[arXiv:2607.12204](https://arxiv.org/abs/2607.12204)
 
 ## What this repository verifies
 
