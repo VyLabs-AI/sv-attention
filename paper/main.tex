@@ -1,0 +1,84 @@
+\documentclass{article}
+
+% --- Public arXiv v2 -------------------------------------------------------
+\usepackage[preprint]{tmlr}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{hyperref}
+\usepackage{url}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{amsfonts}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{nicefrac}
+\usepackage{microtype}
+\usepackage{graphicx}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+
+\newtheorem{proposition}{Proposition}
+\theoremstyle{definition}
+\newtheorem{example}{Example}
+
+\title{Forgetful Attention: An Auditable Support-Vector Memory\\
+for Selective Retention and Verified Deletion%
+\thanks{Code and reproducibility materials:
+\url{https://github.com/vishrmsh/sv-attention}.}}
+
+\author{\name Vishwajith Ramesh \email vish@vylabs.ai \\
+        \addr Vy Labs, Inc.}
+
+\def\month{08}
+\def\year{2026}
+
+\hypersetup{
+  pdfauthor={Vishwajith Ramesh},
+  pdftitle={Forgetful Attention: An Auditable Support-Vector Memory for Selective Retention and Verified Deletion},
+  pdfsubject={arXiv v2 preprint}
+}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+Auditable memory requires more than a small state: it requires a statement of
+which output is preserved, relative to which reference solve, and across which
+updates. We introduce Support Vector Attention, whose one-class gate exposes
+zero-coefficient reserve tokens and a maintained active set, enabling explicit
+contracts not exposed by an undifferentiated dense state. We prove that
+removing a reserve token without re-solving preserves the solved context's
+readout, and that a completed active-token decrement targets the retained-key
+coefficient optimum at the same box parameter \(C\). Across \(1{,}200\) fp64
+decrement/refit trials on Gaussian, redundant, real MIMIC-IV, and learned keys,
+\(1{,}199\) complete; regime-level median finite-probe decision-function
+deviations range from \(4.5\times10^{-13}\) to \(5.7\times10^{-7}\), and
+reference-run median deletion/refit speedups are \(24\)--\(223\times\) on the
+reference CPU. We also characterize the boundary of the reserve certificate:
+a deterministic construction proves that current reserve status alone cannot
+guarantee full-history equivalence after arbitrary future admissions. At
+matched budgets, support selection yields held-out rare-group query recall
+\(0.861\) versus \(0.319\) for an oracle H2O-style selector under skewed
+redundancy. In a held-out-channel ICU control that removes direct label-channel
+reuse, SpO\(_2\) alone defines events and is excluded from all selector inputs;
+threshold-hour retention is \(0.464\) versus \(0.225\) for an H2O-style
+self-mass selector. A separate batched path supports
+end-to-end training; at \(3.22\)M parameters, seven paired seeds yield mean best
+validation BPC \(2.178\) versus \(2.383\) (two-sided paired \(t\)-test,
+\(p=0.001\)). The certificates are point-in-time and fixed-\(C\) by
+construction; future-safe streaming and general-purpose performance remain
+open, and larger fixed-budget runs are consistent with slower optimization.
+\end{abstract}
+
+\input{body}
+
+\bibliographystyle{tmlr}
+\bibliography{references}
+
+\appendix
+\input{appendix}
+
+\end{document}

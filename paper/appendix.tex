@@ -1,0 +1,202 @@
+\section{The implicit vector--Jacobian product}\label{app:vjp}
+This section describes the custom backward for the fp64 maintained solver; it is
+not the backward used by the stabilized batched training path. Within a fixed
+active-set partition $(S, E, R)$ the free variables $u = [\rho;\, \alpha_S]$
+satisfy the bordered KKT system $M u = c$, with $M = [[0, \mathbf{1}^\top],[\mathbf{1},
+2K_{SS}]]$ and
+\begin{equation}
+c = \begin{bmatrix} 1 - |E|\,C \\ \mathrm{diag}(K)_S - 2C\, K_{SE}\mathbf{1} \end{bmatrix},
+\qquad u = \mathcal{R} c, \quad \mathcal{R} = M^{-1}.
+\end{equation}
+For a loss $L$ with upstream cotangents $\bar\rho, \bar\alpha_S$, let
+$\bar u = [\bar\rho;\, \bar\alpha_S]$ and $w = \mathcal{R}^\top \bar u$ with margin block
+$w_S$. Differentiating $u = \mathcal{R} c$ and using $d\mathcal{R} = -\mathcal{R}\, dM\,
+\mathcal{R}$ gives $dL = w^\top dc - w^\top dM\, u$; collecting the coefficients of
+$dK_{ij}$,
+\begin{align}
+\frac{\partial L}{\partial K_{ii}} &\mathrel{+}= [w_S]_i && (i \in S), &
+\frac{\partial L}{\partial K_{ie}} &\mathrel{+}= -2C\,[w_S]_i && (i \in S,\, e \in E), &
+\frac{\partial L}{\partial K_{ij}} &\mathrel{+}= -2\,[w_S]_i\,[\alpha_S]_j && (i, j \in S).
+\end{align}
+Every term is a rank-one assembly, and the custom backward only multiplies by
+$\mathcal{R}^\top$, which the maintained forward pass already stores; it performs no
+second system solve. Changes in the active set happen on a measure-zero set of inputs
+across which the map is piecewise smooth; as with the kink in a ReLU, we do not route
+gradient through the discrete change in set membership. The expressions are verified
+against finite differences by double-precision \texttt{gradcheck}. This
+inverse-reuse/no-second-solve statement does not apply to Appendix~\ref{app:solver}.
+
+\section{The batched projected-gradient solver}\label{app:solver}
+The language-model training forward uses a stabilized approximation for every
+(sequence, head, chunk) problem. A sequential active-set walk solves one problem at a
+time; instead, the single-precision accelerated projected gradient of
+Algorithm~\ref{alg:fista} estimates all partitions at once. Because \eqref{eq:svdd} is a
+box- and sum-constrained convex quadratic program, each FISTA step is a dense batched
+matrix product and a vectorized projection onto the capped simplex
+$\{a : \sum_i a_i = 1,\, 0 \le a_i \le C\}$, computed by bisection on the dual
+variable. The projection and step are fused into one compiled graph and run through
+MLX~\citep{mlx}; a per-row mask lets problems of different prefix length share one
+batch.
+
+The estimated coefficients define masks $(S,E)$. In PyTorch, the implementation packs
+their bordered KKT systems, adds a fixed ridge $\lambda=10^{-3}$ to each valid margin
+diagonal, and computes
+\begin{equation}
+\widetilde{M}u=c,\qquad
+\widetilde{M}=M+\lambda\,\mathrm{diag}(0,\mathbf{1}_S),
+\qquad \widetilde{\alpha}_S=u_S
+\end{equation}
+with \texttt{torch.linalg.solve}. Standard autograd differentiates this solve. Thus
+$\widetilde{\alpha}$ is the exact solution of the \emph{ridged packed system}, but only
+a stabilized approximation to the unregularized coefficients of \eqref{eq:svdd}. This
+path neither invokes the custom VJP of Appendix~\ref{app:vjp} nor inherits its
+no-second-solve property, and it is not used for the fixed-$C$
+decrement/refit certificate.
+
+\begin{algorithm}[h]
+\caption{Stabilized batched SVDD training approximation (one FISTA step shown; all
+problems in parallel).}
+\label{alg:fista}
+\begin{algorithmic}[1]
+\State \textbf{input} Gram tensors $K \in \mathbb{R}^{G \times n \times n}$, box $C$, mask
+$\mu \in \{0,1\}^{G \times n}$
+\State $L \gets 2\,\lambda_{\max}(K)$ \Comment{Lipschitz constant; batched power iteration}
+\State $a \gets \mu / \!\sum \mu,\; y \gets a,\; t \gets 1$
+\For{$k = 1, \dots, T$}
+  \State $g \gets 2 K y - \mathrm{diag}(K)$ \Comment{batched gradient}
+  \State $a' \gets \Pi_{\triangle_C}\!\big(y - g / L,\, \mu\big)$ \Comment{capped-simplex projection (bisection)}
+  \State $t' \gets \tfrac{1}{2}\big(1 + \sqrt{1 + 4 t^2}\big),\quad
+         y \gets a' + \tfrac{t - 1}{t'}(a' - a)$
+  \State $a \gets a',\; t \gets t'$
+\EndFor
+\State derive estimated masks $(S,E)$ from $a$
+\State $\widetilde M \gets M + 10^{-3}\,\mathrm{diag}(0,\mathbf{1}_S)$
+\State $u \gets \texttt{torch.linalg.solve}(\widetilde M,c)$
+       \Comment{autograd differentiates the ridged solve}
+\State \textbf{return} stabilized $\widetilde{\alpha}$
+\end{algorithmic}
+\end{algorithm}
+
+\section{Experimental details}\label{app:details}
+\paragraph{Models and training.} The backbone is a pre-norm decoder with token and learned
+positional embeddings, a weight-tied output head, and a pluggable attention module so every
+variant shares an identical backbone. The $3.22$M configuration is $d_{\text{model}}{=}256$,
+$4$ layers, $4$ heads, block $256$; the $10$M configuration is $d_{\text{model}}{=}384$, $6$
+layers, $6$ heads, block $512$. All variants train with AdamW ($\beta = (0.9, 0.95)$, weight
+decay $0.1$), gradient clip $1.0$, a cosine schedule, and batch $16$; we report
+the best validation BPC over training. The \(3.22\)M runs use the first
+\(5{,}000{,}000\) enwik8 bytes, while the \(10\)M and \(32\)M runs use the first
+\(20{,}000{,}000\), each with a $90/10$ train/validation split and byte
+vocabulary \(256\). The primitive solver hyperparameter is the box $C$. The
+language-model runs set $C=0.25$ directly.
+In studies that report $\nu$, we calibrate $C:=1/(\nu n_0)$ once at the declared
+admission/reference size $n_0$, record that scalar, and do not recompute it as the
+context size changes. Because the constrained problem requires $nC\geq1$, the causal
+implementation uses an ungated warm-up below $\lceil1/C\rceil+2$ available keys and
+issues no SV certificate there. The gate uses an RBF kernel, chunk length $64$, and
+$80$ FISTA iterations in the batched solver.
+
+The fixed-\(C\) decrement/refit audit and certificates on frozen learned keys
+use the maintained CPU solver in fp64. The fixed-context synthetic and clinical
+selection benchmarks instead solve independent batch QPs and use their support
+sets as point-in-time selection policies; they are not maintained-decrement
+audits. The language-model training and throughput paths use the
+single-precision batched partition finder followed by the \(10^{-3}\)-ridged
+\texttt{torch.linalg.solve}/autograd path; their coefficients are a stabilized
+training approximation. When a deletion certificate is reported on a trained
+model, its frozen learned keys are re-solved by the fp64 maintained solver.
+Clinical experiments use MIMIC-IV under its credentialed data use agreement.
+For the held-out-channel control, the event label is unstandardized hourly
+SpO\(_2<90\) after within-stay forward/backward filling and cohort-median
+imputation; the standardized SpO\(_2\) column is removed before the
+five-dimensional gate and all matched-budget baselines are computed. The
+reported stay-level percentile interval bootstraps the \(718\) paired per-stay
+retention differences \(10{,}000\) times with seed \(0\), treating stays as
+independent resampling units.
+
+\paragraph{Throughput protocol.} We run
+\verb|python -m experiments.g1_throughput --paper| on an Apple M3 Ultra
+(32 physical CPU cores, 512\,GiB unified memory), macOS 26.5, Python 3.11.14,
+PyTorch 2.12.1, NumPy 2.4.6, and MLX 0.31.2. A timed step is
+\texttt{zero\_grad} plus full-model forward, cross-entropy, and backward; it excludes
+the optimizer update, data loading, evaluation, and checkpointing. Direct rows use
+batch $16$ and report the median and interquartile range of seven separately
+synchronized samples after three warm-ups. The mixed SV row includes PyTorch CPU
+work, host/device transfers, MLX-GPU FISTA, the ridged PyTorch KKT solve, and
+backward. The two exact active-set diagnostics implement the RBF readout, are
+measured at batch $2$, and are linearly extrapolated by $8\times$; they are retained
+as historical diagnostics rather than like-for-like hybrid comparisons. Softmax is
+the repository's unfused masked implementation, not FlashAttention.
+
+\paragraph{Matched-state protocol.} For each seed we train the SV hybrid, measure its mean
+active state $|S \cup E|$ on held-out data, and set the sliding-window Transformer's window to
+that state plus the local-window length, so the two layers see a matched token budget. The
+recurrent baselines (DeltaNet, linear attention) carry their own fixed state and are reported
+at it; full softmax is the unbounded reference. The seven-seed paired comparison is only
+SV versus matched swa; the DeltaNet, linear, and full-softmax rows are single-seed
+references. Every variant uses the identical backbone, optimizer, schedule, and training
+token budget.
+
+\paragraph{Fixed-\(C\) decrement/refit protocol.} For each trial we build a
+context, set \(C\) once, solve the gate in fp64, and remove a token two ways:
+(i) the C\&P reverse path and (ii) a retained-set refit under that same \(C\).
+Recomputing \(C\) from the smaller set would define a different problem. We
+compare their decision functions
+$f(x) = 2\sum_i \alpha_i \kappa(x, x_i) - \rho$ on probes spanning the retained, forgotten,
+and jittered points, and report the maximum deviation. We use the decision function rather
+than the raw coefficients because on exact duplicates the SVDD optimum is non-unique
+($\alpha$ and the partition may differ while the function is identical), so the function is
+the correct equivalence test. The decay baseline scales the forgotten token's coefficient by $\gamma$ and
+is evaluated on the same metric. Regimes are Gaussian keys (\(d=6\)),
+redundant near-duplicates, real MIMIC-IV hourly vitals, and a trained model's
+learned key projections; \(300\) attempts each. The report stores all
+\(1{,}200\) statuses: \(1{,}199\) complete and one MIMIC decrement reaches the
+explicit margin-empty edge case.
+
+\section{Per-seed matched-state results}\label{app:seeds}
+Table~\ref{tab:seeds} gives the per-seed bits-per-character for the SV hybrid and the
+matched-state sliding-window Transformer (swa) at $3.22$M parameters, the basis for the
+significance test in Section~\ref{sec:quality}. Every one of the seven seeds favors the
+hybrid. Mean BPC is $2.178$ for SV and $2.383$ for swa; the mean paired relative
+improvement is $8.6\%$ ($95\%$ \(t\)-interval $[5.2, 12.0]\%$). A two-sided
+paired \(t\)-test on the absolute BPC differences gives $t = 5.95$
+($p = 0.00101$); a Wilcoxon signed-rank test gives $p = 0.016$,
+and Cohen $d_z = 2.25$.
+
+\begin{table}[h]
+\centering
+\caption{Per-seed matched-state language modeling (enwik8 BPC; $3.22$M params).
+Each seed sets the model initialization, data order, and matched window; the hybrid
+wins on all seven. The final column gives mean BPC for the model rows and mean paired
+relative improvement for the final row.}
+\label{tab:seeds}
+\begin{tabular}{lcccccccc}
+\toprule
+seed & 0 & 1 & 2 & 3 & 4 & 5 & 6 & mean \\
+\midrule
+SV hybrid & 2.110 & 2.104 & 2.139 & 2.120 & 2.310 & 2.303 & 2.159 & \textbf{2.178} \\
+Transformer++ (matched) & 2.287 & 2.297 & 2.469 & 2.415 & 2.389 & 2.420 & 2.405 & 2.383 \\
+improvement (\%) & 7.7 & 8.4 & 13.4 & 12.2 & 3.3 & 4.8 & 10.2 & \textbf{8.6} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+On the contemporary TinyStories corpus~\citep{tinystories} (also $3.22$M,
+byte-level), the hybrid has lower BPC on all three seeds:
+$1.329/1.185/1.269$ versus matched swa $1.434/1.451/1.526$, a mean improvement
+of $14.2\%$ (paired $t=4.0$, $p=0.057$ at $n=3$). The result is directionally
+positive but non-significant, not statistical confirmation.
+
+\paragraph{Larger scales.} At $10$M parameters (block $512$, five seeds) the
+matched-state comparison reverses at the fixed \(6{,}000\)-step budget:
+per-seed SV vs.\ swa best-validation BPC is $2.406/2.502$, $2.249/2.661$,
+$2.415/2.426$, $2.475/2.286$, $3.127/2.524$, a mean of $+2.5\%$ (SV worse)
+with a standard deviation of ${\sim}15\%$. Several best values occur at or near
+the final evaluations, and the hybrid traces remain high-variance, so this is a
+matched-budget rather than a matched-convergence comparison. In one \(32\)M run
+(\(d_{\rm model}=512\), \(10\) layers, \(8\) heads), the hybrid reaches
+\(4.456\) BPC while still improving late in training, versus \(3.106\) for swa
+at the same step budget. These runs are consistent with slower, less stable
+optimization of the chunk-frozen gate; whether the ordering persists at
+matched convergence remains open
+(Section~\ref{sec:limitations}).

@@ -1,0 +1,39 @@
+{
+  "mode": "held_out_vital",
+  "held_out_vital": "spo2",
+  "max_stays": 1465,
+  "event_positive_attempts": 718,
+  "completed_stays": 718,
+  "status_counts": {
+    "complete": 718,
+    "no_event": 747
+  },
+  "nu": 0.3,
+  "kernel": "RBF",
+  "kernel_width": 3.0,
+  "aggregate": {
+    "budget": 0.32260247984516066,
+    "n_rare": 5.895543175487465,
+    "n": 194.91643454039,
+    "svdd_retain": 0.46437441152406944,
+    "svdd_retrieval": 0.4983044825559501,
+    "h2o_retain": 0.22537539510281843,
+    "h2o_retrieval": 0.2504442344681811,
+    "recency_retain": 0.4087777825522535,
+    "recency_retrieval": 0.42325248680050453,
+    "random_retain": 0.3326064163901312,
+    "random_retrieval": 0.39793588120244056
+  },
+  "svdd_minus_h2o_retention": {
+    "mean": 0.238999016421251,
+    "bootstrap_95_ci": [
+      0.19438842837172288,
+      0.2835287712453111
+    ],
+    "bootstrap_samples": 10000,
+    "seed": 0,
+    "method": "paired percentile bootstrap",
+    "resampling_unit": "stay",
+    "independent_unit_assumption": true
+  }
+}

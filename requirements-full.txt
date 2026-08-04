@@ -1,0 +1,6 @@
+-r requirements-core.txt
+
+# Differentiable layers, plots, and MIMIC preprocessing.
+torch>=2.2
+matplotlib>=3.8
+pandas>=2.0

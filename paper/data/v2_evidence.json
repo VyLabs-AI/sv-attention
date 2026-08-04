@@ -1,0 +1,199 @@
+{
+  "schema_version": 2,
+  "fixed_c_deletion": {
+    "trials_per_regime": 300,
+    "regimes": {
+      "Gaussian": {
+        "attempted": 300,
+        "completed": 300,
+        "partition_match": 0.99,
+        "median": 2.4e-9,
+        "mean": 3.1e-5,
+        "worst": 6.4e-3,
+        "decay_median": 8.26e-2
+      },
+      "Redundant": {
+        "attempted": 300,
+        "completed": 300,
+        "partition_match": 0.52,
+        "median": 5.7e-7,
+        "mean": 3.1e-5,
+        "worst": 9.6e-4,
+        "decay_median": 2.37e-1
+      },
+      "MIMIC-IV": {
+        "attempted": 300,
+        "completed": 299,
+        "partition_match": 0.98,
+        "median": 1.6e-9,
+        "mean": 5.6e-5,
+        "worst": 1.1e-2,
+        "decay_median": 1.49e-1,
+        "failures": {
+          "decrement:margin_empty": 1
+        }
+      },
+      "Learned keys": {
+        "attempted": 300,
+        "completed": 300,
+        "partition_match": 1.0,
+        "median": 4.5e-13,
+        "mean": 9.7e-13,
+        "worst": 1.1e-11,
+        "decay_median": 2.24e-2
+      }
+    }
+  },
+  "deletion_latency": {
+    "platform": "macOS-26.5-arm64-arm-64bit",
+    "cpu": "Apple M3 Ultra",
+    "python": "3.11.14",
+    "numpy": "2.4.6",
+    "trials_per_size": 30,
+    "warmups_per_size": 1,
+    "dimension": 6,
+    "nu": 0.4,
+    "kernel": "RBF",
+    "kernel_width": 2.0,
+    "seed": 0,
+    "victim_sampling": "uniform random token",
+    "box_policy": "C fixed within each deletion/refit pair",
+    "summaries": [
+      {
+        "n": 120,
+        "median_deletion_ms": 0.303708,
+        "median_refit_ms": 7.7660415,
+        "median_per_trial_speedup": 25.726204610663697
+      },
+      {
+        "n": 256,
+        "median_deletion_ms": 0.9201250000000001,
+        "median_refit_ms": 22.0429375,
+        "median_per_trial_speedup": 24.178758346575652
+      },
+      {
+        "n": 384,
+        "median_deletion_ms": 1.0424164999999999,
+        "median_refit_ms": 59.33081249999999,
+        "median_per_trial_speedup": 62.985742126585805
+      },
+      {
+        "n": 512,
+        "median_deletion_ms": 0.6949585,
+        "median_refit_ms": 158.55672950000002,
+        "median_per_trial_speedup": 223.17194309927402
+      }
+    ]
+  },
+  "point_in_time_selection": {
+    "initial_points": [[-1.0, 0.0], [1.0, 0.0], [0.0, 0.9]],
+    "future_point": [0.0, -10.0],
+    "reserve_index": 2,
+    "query": [0.25, 0.1],
+    "initial_scalar_values": [1.0, 2.0, 9.0],
+    "future_scalar_value": 4.0,
+    "current_decision_deviation_bound": 1.0e-12,
+    "current_attention_deviation": 4.570994027730535e-9,
+    "future_full_history_alpha": 0.03327001,
+    "future_max_decision_deviation": 0.00407857,
+    "kernel": "RBF",
+    "kernel_width": 5.0,
+    "C": 1.0
+  },
+  "selection": {
+    "skewed_redundancy_rare_recall": {
+      "SV gate": 0.861,
+      "Oracle H2O-style": 0.319,
+      "Random": 0.472,
+      "Recency": 0.0
+    },
+    "mimic_deterioration_retention": {
+      "SV gate": 0.80,
+      "H2O": 0.05,
+      "Random": 0.34,
+      "Recency": 0.30
+    },
+    "mimic_held_out_spo2_retention": {
+      "analysis_stays": 718,
+      "mean_budget": 0.32260247984516066,
+      "SV gate": 0.46437441152406944,
+      "H2O": 0.22537539510281843,
+      "Random": 0.3326064163901312,
+      "Recency": 0.4087777825522535,
+      "sv_minus_h2o": 0.238999016421251,
+      "bootstrap_95_ci": [
+        0.19438842837172288,
+        0.2835287712453111
+      ],
+      "bootstrap_samples": 10000,
+      "bootstrap_seed": 0,
+      "held_out_channel": "spo2",
+      "event_definition": "unstandardized hourly SpO2 < 90",
+      "event_preprocessing": "within-stay forward/backward fill, then cohort-median imputation"
+    },
+    "distinct_key_negative_control": {
+      "pairs": 10,
+      "gated_recall_at_1": 0.955,
+      "ungated_rbf_recall_at_1": 0.970,
+      "softmax_recall_at_1": 0.535,
+      "gated_support_fraction": 1.0,
+      "command": "python -m svattn.run_recall"
+    }
+  },
+  "language_modeling": {
+    "metric": "best validation bits per character",
+    "train_validation_split": [0.9, 0.1],
+    "matched_step_budget": 6000,
+    "enwik8_3.22m": {
+      "prefix_bytes": 5000000,
+      "evaluation_every_steps": {
+        "seed_0": 500,
+        "seeds_1_to_6": 1000
+      },
+      "seeds": [0, 1, 2, 3, 4, 5, 6],
+      "sv": [2.110, 2.104, 2.139, 2.120, 2.310, 2.303, 2.159],
+      "swa": [2.287, 2.297, 2.469, 2.415, 2.389, 2.420, 2.405],
+      "mean_sv": 2.1778571428571425,
+      "mean_swa": 2.383142857142857,
+      "mean_paired_relative_improvement": 0.08584705764165679,
+      "relative_improvement_t_interval_95": [
+        0.05178044780614704,
+        0.11991366747716653
+      ],
+      "absolute_difference_paired_t": 5.952518071172509,
+      "absolute_difference_paired_t_p": 0.0010055538974530522,
+      "wilcoxon_p": 0.015625,
+      "cohen_dz": 2.249840355848619
+    },
+    "tinystories_3.22m": {
+      "seeds": [0, 1, 2],
+      "sv": [1.329, 1.185, 1.269],
+      "swa": [1.434, 1.451, 1.526],
+      "mean_paired_relative_improvement": 0.142,
+      "paired_t": 4.0,
+      "paired_t_p": 0.057
+    },
+    "enwik8_10m": {
+      "prefix_bytes": 20000000,
+      "evaluation_every_steps": {
+        "seed_0": 500,
+        "seeds_1_to_4": 1000
+      },
+      "seeds": [0, 1, 2, 3, 4],
+      "sv": [2.406, 2.249, 2.415, 2.475, 3.127],
+      "swa": [2.502, 2.661, 2.426, 2.286, 2.524],
+      "mean_relative_difference_sv_minus_swa": 0.025,
+      "relative_difference_sample_sd": 0.15
+    },
+    "enwik8_32m": {
+      "prefix_bytes": 20000000,
+      "evaluation_every_steps": 500,
+      "seeds": [0],
+      "sv": [4.456],
+      "swa": [3.106],
+      "d_model": 512,
+      "layers": 10,
+      "heads": 8
+    }
+  }
+}

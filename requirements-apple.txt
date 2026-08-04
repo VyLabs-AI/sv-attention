@@ -1,0 +1,4 @@
+-r requirements-full.txt
+
+# Optional batched GPU solver for Apple silicon.
+mlx>=0.20; platform_system == "Darwin" and platform_machine == "arm64"

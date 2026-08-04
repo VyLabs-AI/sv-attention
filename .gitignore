@@ -1,0 +1,59 @@
+# Python and environments
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+.venv*/
+*.egg-info/
+.env
+.env.*
+.cache/
+.vscode/
+.idea/
+*.code-workspace
+
+# Generated experiment products
+outputs/
+*.pt
+*.pth
+*.ckpt
+*.safetensors
+*.npy
+*.pkl
+*.jsonl
+*.h5
+*.log
+wandb/
+
+# Credentials and local service configuration
+*credential*
+*credentials*
+*.pem
+*.key
+service-account*.json
+
+# Corpora and credentialed clinical material
+data/
+!paper/data/
+!paper/data/v2_evidence.json
+clinical_seq/cache/
+*.npz
+*.parquet
+*.csv.gz
+mimic-iv*/
+MIMIC-IV*/
+
+# TeX build products (submitted figures and evidence remain tracked)
+paper/*.aux
+paper/*.bbl
+paper/*.blg
+paper/*.log
+paper/*.out
+paper/*.pdf
+paper/*.synctex.gz
+
+# Local release products and editor files
+releases/
+.DS_Store
+*.tar.gz
+*.zip

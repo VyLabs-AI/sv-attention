@@ -1,0 +1,47 @@
+{
+  "artifact": "reference deletion-latency summary",
+  "command": "python -m experiments.deletion_latency --sizes 120 256 384 512 --trials 30 --seed 0 --report outputs/deletion_latency_v2_reference_env.json",
+  "platform": "macOS-26.5-arm64-arm-64bit",
+  "cpu": "Apple M3 Ultra",
+  "python": "3.11.14",
+  "numpy": "2.4.6",
+  "configuration": {
+    "sizes": [120, 256, 384, 512],
+    "trials_per_size": 30,
+    "warmups_per_size": 1,
+    "dimension": 6,
+    "nu": 0.4,
+    "kernel": "RBF",
+    "kernel_width": 2.0,
+    "seed": 0,
+    "victim_sampling": "uniform random token",
+    "box_policy": "C fixed within each deletion/refit pair"
+  },
+  "summaries": [
+    {
+      "n": 120,
+      "median_deletion_ms": 0.303708,
+      "median_refit_ms": 7.7660415,
+      "median_per_trial_speedup": 25.726204610663697
+    },
+    {
+      "n": 256,
+      "median_deletion_ms": 0.9201250000000001,
+      "median_refit_ms": 22.0429375,
+      "median_per_trial_speedup": 24.178758346575652
+    },
+    {
+      "n": 384,
+      "median_deletion_ms": 1.0424164999999999,
+      "median_refit_ms": 59.33081249999999,
+      "median_per_trial_speedup": 62.985742126585805
+    },
+    {
+      "n": 512,
+      "median_deletion_ms": 0.6949585,
+      "median_refit_ms": 158.55672950000002,
+      "median_per_trial_speedup": 223.17194309927402
+    }
+  ],
+  "note": "Absolute wall time is hardware- and load-sensitive; the command writes all per-trial values."
+}
