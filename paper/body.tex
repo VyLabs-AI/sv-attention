@@ -24,13 +24,13 @@ finish---and numerical agreement. Each completed trial compares
 the maintained deletion with a fresh retained-key fit on retained, removed, and
 perturbed keys using the gate's scalar boundary score (the \emph{gate score},
 defined formally in Section~\ref{sec:gate}). Across \(1{,}200\)
-64-bit floating-point trials on random normally distributed (Gaussian) keys,
+fp64 trials on Gaussian keys,
 clustered near-duplicates, hourly vital-sign keys from Medical
 Information Mart for Intensive Care IV (MIMIC-IV), and key projections from a
 trained recall model, \(1{,}199\) complete. The median of the per-trial maximum
 gate-score discrepancies ranges from
 \(4.5\times10^{-13}\) to
-\(5.7\times10^{-7}\). On the reference central processor (CPU), the median
+\(5.7\times10^{-7}\). On the reference CPU, the median
 per-trial ratio of fresh-refit time to maintained-deletion time is
 \(24\)--\(223\times\). The one uncovered margin-empty
 path---a state with no coefficient strictly between \(0\) and \(C\)---remains
@@ -45,8 +45,8 @@ proposition and counterexample state what the gate proves now and what a
 stronger streaming guarantee would require.
 
 Verification and training deliberately use separate numerical paths. The
-verification solver uses 64-bit floating-point arithmetic (fp64), updates the
-existing coefficient solution, and reuses a stored matrix inverse. The
+verification solver uses fp64 arithmetic, updates the existing coefficient
+solution, and reuses a stored matrix inverse. The
 training path instead solves many coefficient problems in parallel with a
 stabilized approximation. Each claim applies only to the arithmetic path that
 supports it. Table~\ref{tab:contract} summarizes these boundaries.
@@ -301,26 +301,24 @@ Every implementation claim is accompanied by measured coverage and tolerance.
 \paragraph{Stabilized training path.}
 For each sequence, attention head, and fixed token block (chunk), the Fast
 Iterative Shrinkage-Thresholding Algorithm (FISTA) performs accelerated
-projected-gradient steps in 32-bit floating-point arithmetic and estimates the
-coefficient groups. We abbreviate this arithmetic as fp32. The PyTorch
-machine-learning framework then batches their padded KKT systems, adds a
+projected-gradient steps in fp32 and estimates the coefficient groups. PyTorch
+then batches their padded KKT systems, adds a
 \(10^{-3}\) diagonal ridge for numerical stability, and differentiates the
-linear solve with automatic differentiation (autograd)
+linear solve with autograd
 (Appendix~\ref{app:solver}). These coefficients are an approximation to
 Equation~\ref{eq:svdd}. This path is trainable, but it is not the maintained
 solver, does not reuse its inverse, and supplies no deletion certificate.
 
 The separation in Figure~\ref{fig:paths} is deliberate. Verification favors a
-maintained, inspectable fp64 state; training favors batched operations on a
-graphics processing unit (GPU). A trained model can still be audited by freezing its keys and
+maintained, inspectable fp64 state; training favors batched GPU operations. A
+trained model can still be audited by freezing its keys and
 re-solving those keys on the maintained path.
 
 \subsection{Causal usability probe}\label{sec:method-hybrid}
 
 To test autoregressive use, where a query may access only earlier tokens, the
 causal layer updates its long-range gate only at chunk boundaries and adds
-ordinary exponentiated dot-product attention (softmax attention) over recent
-tokens. This hybrid tests whether the memory can participate in end-to-end
+ordinary softmax attention over recent tokens. This hybrid tests whether the memory can participate in end-to-end
 training. The local softmax path has no support-vector certificate. Continued
 reserve pruning preserves the readout at each pruning event, but the resulting
 sequence of states is not certified equal to a run that retains every token.
@@ -504,11 +502,9 @@ stay-level differences with replacement \(10{,}000\) times gives a 95\%
 percentile interval of \(0.194\)--\(0.284\), treating stays as independent.
 This control removes direct label-channel reuse while preserving the same
 selection protocol. A separate task predicts whether an event occurs within
-the next six hours. SV-Attention reaches area under the receiver-operating
-characteristic curve (AUROC; higher is better) \(0.696\), below a long
-short-term memory network (LSTM) at \(0.783\) and softmax attention at
-\(0.751\). Selection that preserves atypical hours does not by itself optimize
-local trend prediction.
+the next six hours. SV-Attention reaches AUROC \(0.696\), below the LSTM at
+\(0.783\) and softmax attention at \(0.751\). Selection that preserves atypical
+hours does not by itself optimize local trend prediction.
 
 \paragraph{\textbf{Negative control---the gate does not explain distinct-key
 recall.}}
@@ -526,22 +522,19 @@ atypicality probes in Figure~\ref{fig:selection}.
 
 \subsection{Gradient and solver checks}\label{sec:grad}
 
-The maintained custom gradient matches finite differences---gradients estimated
-by small numerical input perturbations---for coefficients, gate scores, and the
-complete readout. A trainable student layer reduces mean-squared error against a
+The maintained custom gradient matches finite differences for coefficients,
+gate scores, and the complete readout. A trainable student layer reduces mean-squared error against a
 fixed teacher mapping by \(99\%\) in \(200\) optimizer steps. The batched ridged
 path also passes end-to-end gradient checks, but that validates the stabilized
 approximation it differentiates, not the unregularized fp64 coefficients.
 
 \subsection{Throughput boundary}\label{sec:throughput}
 
-At the \(3.22\)-million-parameter configuration, PyTorch runs the packed
-linear-system solve and readout on the CPU while Apple's MLX array framework
-runs FISTA on the GPU. This mixed path reaches \(9{,}125\) tokens per timed
+At the \(3.22\)M-parameter configuration, PyTorch runs the packed linear-system
+solve and readout on the CPU while MLX runs FISTA on the GPU. This mixed path
+reaches \(9{,}125\) tokens per timed
 forward/loss/backward second on an Apple M3 Ultra, \(35.8\times\) slower than
-the repository's unfused softmax on PyTorch's Metal Performance Shaders (MPS)
-GPU backend. ``Unfused'' means ordinary separate operations rather than a
-specialized fused attention kernel. The CPU softmax diagnostic is also
+the repository's unfused MPS softmax. The CPU softmax diagnostic is also
 \(6.1\times\) faster. Maintained fp64 inference that explicitly updates the
 coefficient groups is slower still.
 These measurements establish that small experiments are feasible; they do not
@@ -552,29 +545,22 @@ establish a competitive architecture or accelerator kernel.
 enwik8 is a byte-level English Wikipedia language-model benchmark; we use its
 first \(5\) million bytes. For each run, best-validation bits per character
 (BPC; lower is better) is the lowest validation loss observed during training.
-At \(3.22\) million parameters, all seven paired random seeds favor the hybrid:
-each seed initializes and orders data for both compared models. Mean BPC is
+At \(3.22\)M parameters, all seven paired seeds favor the hybrid. Mean BPC is
 \(2.178\) versus \(2.383\) for a sliding-window Transformer whose
 visible-token count matches the hybrid's measured active long-range state plus
-local window. Averaging
-\((\mathrm{BPC}_{\rm baseline}-\mathrm{BPC}_{\rm hybrid})/
-\mathrm{BPC}_{\rm baseline}\) across seeds gives an \(8.6\%\) relative
-improvement, and a
-two-sided paired \(t\)-test of whether the seven absolute BPC differences have
-mean zero gives \(p=0.001\). On TinyStories, a synthetic short-story corpus for
-small language models, the hybrid has lower BPC on all three seeds, a
+local window. The mean paired relative improvement is \(8.6\%\), and a
+two-sided paired \(t\)-test on the absolute BPC differences gives
+\(p=0.001\). On TinyStories, the hybrid has lower BPC on all three seeds, a
 directionally positive but non-significant result (\(p=0.057\)).
 
-At the same \(6{,}000\) optimizer updates and training-token count, the
-larger-scale comparison reverses. At \(10\) million parameters and five seeds,
-the hybrid is \(2.5\%\) worse on average with high variation across seeds; one
-\(32\)-million-parameter run is substantially behind. These matched-step runs
-do not compare models trained until a shared convergence rule says validation
-performance has stopped improving. The traces suggest slower and less stable
-gate optimization, but whether the ordering persists at matched convergence
-remains open. Thus the small-scale result establishes trainability, while the
-larger runs identify an optimization problem rather than a scale-level quality
-verdict.
+At matched \(6{,}000\)-step budgets, the larger-scale comparison reverses. At
+\(10\)M parameters and five seeds, the hybrid is \(2.5\%\) worse on average
+with high between-seed variation; one \(32\)M run is substantially behind.
+These runs do not match models at convergence. The traces suggest slower and
+less stable gate optimization, but whether the ordering persists at matched
+convergence remains open. Thus the small-scale result establishes trainability,
+while the larger runs identify an optimization problem rather than a
+scale-level quality verdict.
 
 \section{Discussion and limitations}\label{sec:limitations}
 
@@ -638,11 +624,18 @@ to credentialed users of PhysioNet, the research-data platform that distributes
 MIMIC-IV, under its data use agreement; we release
 preprocessing and experiment code but no source record or derived cache. The
 v2 package includes a claim-to-command map, dependency tiers, hardware notes,
-and a generator for the four claim-boundary figures. The headline checks use:
+and a generator for the four claim-boundary figures.
+Example~\ref{ex:future}'s future-activation construction:
 \begingroup
 \small
 \begin{verbatim}
 python -m pytest tests/test_fast_solver.py -q
+\end{verbatim}
+\endgroup
+The held-out-channel SpO\(_2\) control:
+\begingroup
+\small
+\begin{verbatim}
 python -m clinical_seq.e2_selection \
   --held-out-vital spo2 --max-stays 1465
 \end{verbatim}

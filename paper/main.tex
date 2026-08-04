@@ -46,48 +46,30 @@ for Selective Retention and Verified Deletion%
 \maketitle
 
 \begin{abstract}
-Auditable memory needs more than compression: it should state what output stays
-unchanged, what fresh computation serves as the reference, and whether the
-claim survives later updates. We introduce Support Vector Attention, which
-represents each token by a key vector (its memory address), fits a boundary
-using those keys alone, and uses a nonnegative coefficient as part of the
-token's readout weight in the normalized value mixture returned for a query. A
-key with coefficient zero is called \emph{reserve};
-a positive-coefficient key is \emph{active}. This structure yields two explicit
-contracts. Removing a reserve token without rerunning the optimization
-preserves the current readout. Deleting an active token with a maintained
-solver---one that updates the existing solution and stored matrix
-state---targets a fresh fit on the retained keys under the same coefficient cap
-\(C\). Across \(1{,}200\) 64-bit floating-point (double-precision) trials
-comparing maintained deletion with fresh refitting on random
-normally distributed (Gaussian) keys, clustered near-duplicates, real Medical Information Mart for
-Intensive Care IV (MIMIC-IV) vital-sign keys, and keys from a trained recall
-model, \(1{,}199\) complete. For each completed trial, we record the largest
-absolute difference between the scalar boundary scores produced by maintained
-deletion and fresh refitting over retained, removed, and slightly perturbed
-keys; the median ranges from \(4.5\times10^{-13}\) to
-\(5.7\times10^{-7}\). On the reference central processor (CPU), fresh fitting is
-\(24\)--\(223\times\) slower than maintained deletion by the median per-trial
-latency ratio. A deterministic example also marks the limit: a zero-coefficient
-token can receive positive weight after a later token is added, so pruning it
-now does not guarantee the same future states as retaining the full history. At
-the same retained-token count, mean recall on held-out queries from rare
-singleton groups is \(0.861\), versus \(0.319\) for a custom Heavy-Hitter
-Oracle (H2O)-style attention-mass proxy allowed to inspect the evaluation
-queries. In an
-intensive-care-unit control, blood-oxygen saturation (SpO\(_2\)) below \(90\%\)
-defines an event but SpO\(_2\) is excluded from every selector; the mean
-per-stay fraction of event hours retained is \(0.464\), versus \(0.225\) for an
-radial-basis-function (RBF) density baseline. A separate parallel approximation
-supports end-to-end training; at \(3.22\) million parameters, seven matched
-random seeds yield mean
-best-validation bits per character (lower is better) of \(2.178\) versus
-\(2.383\) (two-sided paired \(t\)-test of zero mean seedwise difference,
-\(p=0.001\)). These contracts concern
-the current solution and a fresh same-\(C\) fit on retained keys; guarantees
-after arbitrary future additions and general-purpose performance remain open,
-and larger runs with the same \(6{,}000\) training updates suggest slower
-optimization.
+Auditable memory requires a precise contract: which output is preserved,
+relative to which reference solve, and across which updates. We introduce
+Support Vector Attention (SV-Attention), a one-class support vector data
+description (SVDD) gate whose coefficients enter the readout. Zero-coefficient
+keys are \emph{reserve}; positive-coefficient keys are \emph{active}. Removing a
+reserve token without re-solving preserves the current readout. Maintained
+deletion, which updates the existing solver state, targets a fresh retained-key
+fit under the same coefficient cap \(C\). Across \(1{,}200\) fp64
+deletion/refit trials on Gaussian, redundant, MIMIC-IV, and learned keys,
+\(1{,}199\) complete. Median maximum discrepancy in the solver's scalar gate
+score over declared probes ranges from \(4.5\times10^{-13}\) to
+\(5.7\times10^{-7}\), and fresh
+refitting is \(24\)--\(223\times\) slower than maintained deletion on the
+reference CPU. A deterministic example shows that current reserve status does
+not guarantee equivalence after future admissions. At matched token counts,
+rare-group recall is \(0.861\) versus \(0.319\) for an oracle attention-mass
+proxy (H2O-style). In a held-out-channel ICU control, SpO\(_2<90\%\) defines
+events but SpO\(_2\) is excluded from every selector; event-hour retention is
+\(0.464\) versus \(0.225\) for an RBF-density baseline. A separate batched
+approximation supports end-to-end training; at \(3.22\)M parameters, seven
+paired seeds yield mean best-validation bits per character of \(2.178\) versus
+\(2.383\) (\(p=0.001\)). The contracts are point-in-time and fixed-\(C\);
+future-safe streaming and general-purpose performance remain open, and larger
+fixed-step runs suggest slower optimization.
 \end{abstract}
 
 \input{body}
