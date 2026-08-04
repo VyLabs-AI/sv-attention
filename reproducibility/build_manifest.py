@@ -9,6 +9,7 @@ ROOT = Path(__file__).resolve().parents[1]
 MANIFEST = ROOT / "MANIFEST.sha256"
 
 PUBLIC_FILES = {
+    ".gitattributes",
     ".gitignore",
     "CITATION.cff",
     "LICENSE",
