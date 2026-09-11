@@ -164,11 +164,17 @@ def one_trial(X, rng, nu, kpar, n_forget, forget=None):
         for c in sorted(forget, reverse=True):
             m.remove_point(c)
     except (RuntimeError, ValueError, np.linalg.LinAlgError) as error:
+        # The retained-key refit at step (2) is both the comparator and the
+        # declared correctness path, and it has already succeeded here. A
+        # decrement failure therefore costs the maintained-update speedup for
+        # this trial, not the reference state.
         return {
             **base,
             "status": "failed",
             "failure": _failure_code("decrement", error),
             "refit_status": "completed",
+            "policy_status": "refit_fallback",
+            "reached_reference": True,
         }
 
     a_dec = np.array(m.alpha)                              # aligned to `keep` order
@@ -199,6 +205,8 @@ def one_trial(X, rng, nu, kpar, n_forget, forget=None):
         **base,
         "status": "completed",
         "refit_status": "completed",
+        "policy_status": "decrement",
+        "reached_reference": True,
         "alpha_deviation": d_alpha,
         "partition_match": bool(partition_exact),
         "function_deviation": f_dev,

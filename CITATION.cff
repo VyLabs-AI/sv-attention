@@ -1,9 +1,9 @@
 cff-version: 1.2.0
 message: "If you use this software, cite the arXiv article."
-title: "Forgetful Attention reproducibility software"
+title: "Support-vector memory deletion reproducibility software"
 type: software
-version: 2.0.0
-date-released: 2026-08-04
+version: 3.0.0
+date-released: 2026-09-11
 authors:
   - family-names: Ramesh
     given-names: Vishwajith
@@ -13,7 +13,7 @@ repository-code: "https://github.com/VyLabs-AI/sv-attention"
 license: Apache-2.0
 preferred-citation:
   type: article
-  title: "Forgetful Attention: An Auditable Support-Vector Memory for Selective Retention and Verified Deletion"
+  title: "What a Deletion Certificate Covers, and Where It Expires: Auditable Removal from a Support-Vector Memory"
   authors:
     - family-names: Ramesh
       given-names: Vishwajith

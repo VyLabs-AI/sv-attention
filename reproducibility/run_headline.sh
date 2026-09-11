@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Data-free headline checks and figure generation.
+# Data-free headline numerical checks.
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -51,8 +51,5 @@ echo "=== fixed-C deletion latency ==="
 echo "=== fixed-context selection and negative control ==="
 "$PY" -m svattn.eviction_benchmark
 "$PY" -m svattn.run_recall
-
-echo "=== submitted claim-boundary figures ==="
-"$PY" paper/make_v2_figures.py
 
 echo "Headline tier completed; outputs are in $SVATTN_OUTPUTS."

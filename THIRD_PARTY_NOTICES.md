@@ -25,16 +25,9 @@ project-specific one-class extensions are distributed under this repository's
 Apache-2.0 license. Chris Diehl's separate GPL incremental-SVM extension was
 not used for this translation.
 
-## Bundled LaTeX files
+## Historical publication assets
 
-- `paper/fancyhdr.sty` is distributed under the LaTeX Project Public License
-  (LPPL), as stated in its file header.
-- `paper/tmlr.bst` carries the upstream `plainnat`/ICML-derived copyright and
-  LPPL notice stated in its file header.
-- `paper/tmlr.sty` comes from the official
-  [`JmlrOrg/tmlr-style-file`](https://github.com/JmlrOrg/tmlr-style-file)
-  project, which is distributed under Apache-2.0. Its upstream attribution is
-  retained.
+LaTeX styles and manuscript assets were removed from the current repository tip. Their original notices remain with the historical commits. The immutable sequential evidence ZIP retains its own original notices; references there to absent styles describe the original source package, not extra ZIP contents.
 
 ## External dependencies and data
 

@@ -1,5 +1,7 @@
 # Reproducibility guide
 
+These tiers reproduce the existing solver, trained-key and selection results. The completed sequential audit has an independent frozen runtime; see [RELEASE_20260911.md](RELEASE_20260911.md) and [the journal evidence instructions](../journal_evidence/README.md).
+
 Run commands from the repository root. Generated files go to `outputs/`;
 credentialed clinical preprocessing writes to `clinical_seq/cache/`. Both are
 ignored and excluded from releases.
@@ -33,8 +35,7 @@ bash reproducibility/run_headline.sh --quick
 ```
 
 The quick path adds maintained/batched gradient checks, smoke-sized deletion
-latency, skewed-redundancy selection, the distinct-key negative control, and
-the four submitted figures. MLX-specific checks skip unless
+latency, skewed-redundancy selection, the distinct-key negative control, and the distinct-key negative control. MLX-specific checks skip unless
 `requirements-apple.txt` is installed.
 
 Use the reported deletion timing protocol with:
@@ -115,17 +116,8 @@ from Tier 3:
 bash reproducibility/run_mimic.sh audit
 ```
 
-## Figures and evidence
+## Stored numerical evidence
 
-Regenerate the four submitted figures without rerunning experiments:
+`aggregates/v2_evidence.json` preserves the historical aggregates used by `check_evidence.py`; `aggregates/v3_evidence.json` and `aggregates/tiebreak_evidence.json` preserve the current deletion quantiles and projection comparison. Historical `H2O` keys in the clinical aggregate refer to the attention-free score proxy, not a claim of a full H2O implementation.
 
-```bash
-python paper/make_v2_figures.py
-```
-
-`paper/data/v2_evidence.json` is the submitted aggregate record.
-`reproducibility/check_evidence.py` recomputes LM statistics and cross-checks
-the released latency and clinical aggregates.
-
-See `PROVENANCE.md` for the claim-to-command map and `HARDWARE.md` for timing
-and determinism boundaries.
+`check_evidence.py` recomputes paired language-model statistics and cross-checks the latency and clinical aggregate files. See `PROVENANCE.md` for the claim-to-command map and `HARDWARE.md` for timing and determinism boundaries. Manuscripts are maintained on arXiv; this repository contains reproduction material only.

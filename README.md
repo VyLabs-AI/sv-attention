@@ -1,94 +1,37 @@
-# Forgetful Attention
+# Support-vector memory: auditable deletion
 
-Official code and arXiv source for:
+Reproduction code and numerical evidence for **What a Deletion Certificate Covers, and Where It Expires: Auditable Removal from a Support-Vector Memory**. [Paper and updates on arXiv](https://arxiv.org/abs/2607.12204).
 
-**Forgetful Attention: An Auditable Support-Vector Memory for Selective
-Retention and Verified Deletion**
+The memory fits a support-vector boundary around stored keys and uses their nonnegative coefficients to weight values. An exactly zero coefficient permits removal from the current readout; future admissions can invalidate that guarantee. Active-key deletion targets a retained-key refit at the original fixed coefficient cap. Numerical agreement and retained-value readout differences are reported separately.
 
-[arXiv:2607.12204](https://arxiv.org/abs/2607.12204)
+The completed sequential audit preserves the original failures: 66 of 80 trajectories completed. A separately checked guard completed all 5,120 scheduled operations at unchanged acceptance thresholds, with eight initialization rescues and 84 update rescues. These finite synthetic results support explicit acceptance and rescue rules, without establishing general future-admission safety or a production speed advantage.
 
-## What this repository verifies
+## Quick numerical checks
 
-- algebraic reserve removal preserves the currently solved readout, with
-  floating-point residuals checked against explicit tolerances;
-- current reserve status alone does not guarantee future-history equivalence;
-- completed maintained deletion is compared with a retained-key refit under the
-  same fixed box parameter `C`;
-- verification uses a maintained fp64 path, while training uses a separate
-  batched approximation;
-- selection is evaluated under declared redundancy and atypicality regimes;
-- attempted/completed coverage and numerical deviations are reported together.
+Use Python 3.11 and install `requirements-core.txt` in an isolated environment, then run:
 
-## Quick verification
-
-```bash
-python3 -m venv .venv
-source .venv/bin/activate
-python -m pip install --upgrade pip
-python -m pip install -r requirements-core.txt
+```sh
 bash reproducibility/run_quick.sh
 ```
 
-The quick tier reconstructs the future-admission counterexample, checks the
-fixed-\(C\) solver path, validates the held-out-vital helper, and recomputes the
-released aggregate statistics.
+This tests the future-admission counterexample, fixed-cap decrement/refit behavior and clinical-selection helpers using synthetic fixtures, then recomputes saved aggregate statistics. It requires no private dataset or model weights.
 
-For data-free gradient checks, latency, selection, the negative control, and
-the four submitted figures:
+The completed sequential study is distributed as an immutable source-free ZIP in [`journal_evidence/`](journal_evidence/). Follow its instructions to extract, verify all file hashes, recompute guarded acceptance summaries and run small failure-injection tests. The archive contains the exact original and guarded runtime snapshots; execute from that extraction so its code is not mixed with the earlier root implementation.
 
-```bash
-python -m pip install -r requirements-full.txt
-bash reproducibility/run_headline.sh --quick
-```
+## Reproduction scope
 
-Use `--paper` for the reported deletion-latency trial counts. Timing remains
-hardware-sensitive. Install `requirements-apple.txt` to include MLX-specific
-tests; they skip when MLX is unavailable.
+- `cp_svm/` and `svattn/`: maintained one-class solver, reference QP, differentiable and causal attention implementations.
+- `experiments/` and `clinical_seq/`: numerical, trained-key, language-model and credentialed clinical reproduction entry points.
+- `tests/`: solver, gradient, causality and synthetic clinical-helper checks.
+- `reproducibility/`: dependency tiers, original commands, hardware notes, aggregate evidence and release provenance.
+- `journal_evidence/`: complete source-free sequential audit supplement and extraction instructions.
 
-## Optional result tiers
+See [the reproduction guide](reproducibility/README.md) and [September 11 provenance](reproducibility/RELEASE_20260911.md) for the optional tiers and minimum-norm projection protocol. Model experiments require their specified hardware and independently obtained corpora/checkpoints. MIMIC-IV analyses require credentialed access to the original dataset. Historical `H2O` aggregate labels denote the attention-free proxy evaluated here.
 
-- Language modeling and trained-key audits require Apple silicon plus
-  `requirements-apple.txt`; see `reproducibility/run_models.sh`.
-- MIMIC-IV analyses require an independently credentialed MIMIC-IV v3.1 ICU
-  download; see `reproducibility/run_mimic.sh`.
-- The 10M/32M language-model diagnostics are multi-hour fixed-step runs, not
-  matched-convergence studies.
+This repository holds the material needed to inspect and reproduce results. The evolving manuscript is maintained on arXiv. The original six Git commits are preserved; their earlier manuscript assets are absent from the current tip.
 
-The complete claim-to-command map is
-`reproducibility/PROVENANCE.md`.
+## Data and licenses
 
-## Layout
+No MIMIC record, identifier, per-stay result, clinical cache, model checkpoint, corpus, credentials or private account files are distributed. Clinical files contain cohort-level aggregates; the sequential audit uses synthetic solver inputs and numerical state records. Access to original datasets and models remains subject to their distributors' terms.
 
-- `cp_svm/` — maintained one-class solver and batch-QP references;
-- `svattn/` — differentiable, causal, and batched SV-Attention paths;
-- `experiments/` — only entry points used by the final paper;
-- `clinical_seq/` — credentialed MIMIC preprocessing and aggregate analyses;
-- `tests/` — focused contract and gradient tests;
-- `paper/` — self-contained manuscript, aggregate evidence, and figure code;
-- `reproducibility/` — commands, provenance, hardware notes, and aggregates.
-
-## Build the paper
-
-Install the external `tectonic` executable, then run:
-
-```bash
-python paper/make_v2_figures.py
-cd paper
-tectonic main.tex
-```
-
-The four submitted figures are tracked, so TeX compilation does not require
-rerunning experiments.
-
-## Data and release boundaries
-
-No MIMIC record, identifier, per-stay result, or derived cache is distributed.
-The released MIMIC JSON files contain cohort-level aggregates only. Corpora,
-model checkpoints, logs, generated outputs, and the legacy MATLAB reference
-implementation are also excluded.
-
-Code is Apache-2.0. Bundled LaTeX styles and external dependencies retain their
-own licenses; see `THIRD_PARTY_NOTICES.md`.
-
-`MANIFEST.sha256` records the public snapshot contents and is regenerated with
-`python reproducibility/build_manifest.py`.
+Original code is Apache-2.0. Third-party dependencies and the immutable supplement retain their existing notices; see `THIRD_PARTY_NOTICES.md`. `MANIFEST.sha256` records the explicitly allowed current release files and is regenerated with `python reproducibility/build_manifest.py`.

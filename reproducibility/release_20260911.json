@@ -1,0 +1,26 @@
+{
+  "date": "2026-09-11",
+  "repository_url": "https://github.com/VyLabs-AI/sv-attention",
+  "prior_head": "e7a3e4bf",
+  "source_workspace_commit": "6ccc7c882dff0f6bc8d38c3de33e97f20abf65ec",
+  "public_prose_revision": "87bb2e35ff34660706a18e923e78eb85a342bf2f",
+  "public_announcement_verified": false,
+  "scope": "Minimal scientific reproduction code and source-free evidence; no manuscript source/PDF or compilation tooling at the current tip. Existing history and solver runtime preserved.",
+  "artifacts": {
+    "journal_evidence/sv_attention_sequential_evidence_v1.zip": {
+      "sha256": "a955d51584000eac5da26be624d32d4e54be3fc0e83c2d41f81074f39e2fea94",
+      "bytes": 12963794
+    }
+  },
+  "validation": {
+    "root_contract_tests": 15,
+    "aggregate_checks": "passed",
+    "supplement_manifest_payloads_verified": 39,
+    "supplement_contract_tests": 8,
+    "guarded_trajectories": 80,
+    "guarded_operations": 5120,
+    "guarded_acceptance": "all stored published/reference states passed original thresholds",
+    "projection_smoke": "passed",
+    "full_experiments_rerun": false
+  }
+}

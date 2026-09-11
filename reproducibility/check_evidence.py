@@ -9,7 +9,7 @@ from scipy import stats
 
 
 ROOT = Path(__file__).resolve().parents[1]
-EVIDENCE = ROOT / "paper" / "data" / "v2_evidence.json"
+EVIDENCE = ROOT / "reproducibility" / "aggregates" / "v2_evidence.json"
 
 
 def _load(path: Path) -> dict:
