@@ -9,6 +9,7 @@ scripts set NumPy and Torch seeds internally to 0.
 | Point-in-time reserve certificate, fixed-\(C\) regression, and future-admission counterexample | `tests/test_fast_solver.py`, `reproducibility/aggregates/v2_evidence.json` | `python -m pytest tests/test_fast_solver.py -q` | None |
 | Maintained and batched gradient checks; 200-step teacher fit | `tests/test_diff_svdd.py`, `tests/test_fast_diff_svdd.py`, `tests/test_train_toy.py`, `tests/test_causal_layer.py` | `python -m pytest tests/test_diff_svdd.py tests/test_fast_diff_svdd.py tests/test_train_toy.py tests/test_causal_layer.py -q` | MLX-only checks skip when MLX is unavailable |
 | Four-regime fixed-\(C\) decrement/refit coverage and numerical deviations | `experiments/forgetting_rigor.py`, `reproducibility/aggregates/v2_evidence.json` | `bash reproducibility/run_mimic.sh audit` | MIMIC cache and trained QA checkpoint |
+| Condition-number correlation and partition-disagreement tails | `reproducibility/analyze_deletion_tail.py`, `reproducibility/aggregates/deletion_tail_evidence.json` | `python reproducibility/analyze_deletion_tail.py outputs/forgetting_rigor_v2.json --output outputs/deletion_tail_summary.json` | Local audit JSON from `run_mimic.sh audit`; generating it requires the clinical cache and trained QA checkpoint |
 | Maintained deletion latency versus retained-set refit (0.30--1.04 ms; 24--223x) | `experiments/deletion_latency.py`, `reproducibility/deletion_latency_v2.json` | `python -m experiments.deletion_latency --sizes 120 256 384 512 --trials 30 --seed 0 --report outputs/deletion_latency_v2_reference_env.json` | None; wall time is hardware-specific |
 | Skewed-redundancy matched-budget selection | `svattn/eviction_benchmark.py`, `reproducibility/aggregates/v2_evidence.json` | `python -m svattn.eviction_benchmark` | None |
 | Distinct-key gate-off negative control | `svattn/run_recall.py`, `svattn/recall.py`, `reproducibility/aggregates/v2_evidence.json` | `python -m svattn.run_recall` | None |
@@ -51,4 +52,21 @@ cohort-median imputation. SpO2 is excluded from all selector inputs. Released
 clinical evidence is aggregate-only: no MIMIC record, identifier, cache, or
 per-stay result is distributed.
 
-The completed sequential audit and guarded follow-up are documented in `RELEASE_20260911.md` and distributed in `../journal_evidence/`. The minimum-norm projection runner is `experiments/forgetting_tiebreak.py`; its saved aggregate and exact six-tolerance protocol are in `aggregates/tiebreak_evidence.json`.
+The sequential audit and guarded procedure are distributed with their exact execution code and verification commands in [the evidence bundle](../journal_evidence/README.md). The minimum-norm projection runner is `experiments/forgetting_tiebreak.py`; its saved aggregate is `aggregates/tiebreak_evidence.json` and its six-tolerance command is in [the reproduction guide](README.md#minimum-norm-projection-comparison).
+
+## Coverage and numerical precision
+
+`analyze_deletion_tail.py` recomputes the condition/partition statistics from
+saved trial records and exports regime-level aggregates. The included summary
+was checked against the original 1,200 attempted audit records (1,199 completed);
+its source hash is recorded in `aggregates/deletion_tail_evidence.json`.
+Clinical trial records are not distributed. For the clinical regime, the
+stored-record Spearman coefficient is `-0.1348993288590604`; the manuscript
+prints `-0.14`, whereas ordinary rounding of this value to two decimals gives
+`-0.13`. The evidence preserves the full-precision calculation.
+
+The standalone scalar-readout percentages reported as 0.2%, 17.4% and 5.6%
+do not have a recovered reproduction script or scalar-value seed record in
+this repository. Neither `forgetting_rigor.py` nor the tail analyzer regenerates
+those percentages. The four-dimensional projection comparison and sequential
+audit include their own readout calculations and are separate experiments.

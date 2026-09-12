@@ -1,6 +1,6 @@
 # Reproducibility guide
 
-These tiers reproduce the existing solver, trained-key and selection results. The completed sequential audit has an independent frozen runtime; see [RELEASE_20260911.md](RELEASE_20260911.md) and [the journal evidence instructions](../journal_evidence/README.md).
+These tiers reproduce the solver, trained-key and selection results in the current paper. The sequential audit includes its exact execution code; see the [sequential-audit instructions](../journal_evidence/README.md).
 
 Run commands from the repository root. Generated files go to `outputs/`;
 credentialed clinical preprocessing writes to `clinical_seq/cache/`. Both are
@@ -35,7 +35,7 @@ bash reproducibility/run_headline.sh --quick
 ```
 
 The quick path adds maintained/batched gradient checks, smoke-sized deletion
-latency, skewed-redundancy selection, the distinct-key negative control, and the distinct-key negative control. MLX-specific checks skip unless
+latency, skewed-redundancy selection and the distinct-key negative control. MLX-specific checks skip unless
 `requirements-apple.txt` is installed.
 
 Use the reported deletion timing protocol with:
@@ -116,8 +116,39 @@ from Tier 3:
 bash reproducibility/run_mimic.sh audit
 ```
 
+## Condition and partition diagnostics
+
+After the standalone audit, recompute its gate-score tails, partition counts
+and condition-number correlations:
+
+```sh
+python reproducibility/analyze_deletion_tail.py outputs/forgetting_rigor_v2.json \
+  --output outputs/deletion_tail_summary.json
+```
+
+The included `aggregates/deletion_tail_evidence.json` contains regime-level
+statistics from the recorded experiment. See the [coverage and precision
+notes](PROVENANCE.md#coverage-and-numerical-precision) for a printed correlation
+discrepancy and the separate scalar-readout diagnostic that is not regenerated.
+
+## Minimum-norm projection comparison
+
+After supplying the clinical cache and trained QA checkpoint from Tiers 3 and 4,
+run the reported 300 trials per regime across six tolerances:
+
+```sh
+python -m experiments.forgetting_tiebreak --trials 300 \
+  --eps-rels 1e-10,1e-8,1e-6,1e-5,1e-4,1e-3 \
+  --report outputs/forgetting_tiebreak.json \
+  --summary outputs/forgetting_tiebreak_summary.json
+```
+
+To exercise only the data-free regimes, add `--regimes gaussian redundant`.
+The saved comparison is `aggregates/tiebreak_evidence.json`. Numerical near-ties
+do not prove that the fixed-cap problem has multiple exact optima.
+
 ## Stored numerical evidence
 
-`aggregates/v2_evidence.json` preserves the historical aggregates used by `check_evidence.py`; `aggregates/v3_evidence.json` and `aggregates/tiebreak_evidence.json` preserve the current deletion quantiles and projection comparison. Historical `H2O` keys in the clinical aggregate refer to the attention-free score proxy, not a claim of a full H2O implementation.
+`aggregates/v2_evidence.json` supplies the language-model and selection statistics used by `check_evidence.py`; `aggregates/v3_evidence.json` and `aggregates/tiebreak_evidence.json` supply the deletion quantiles and projection comparison. The versioned filenames are stable evidence identifiers. `H2O` keys in the clinical aggregate refer to the attention-free score proxy evaluated in the paper.
 
 `check_evidence.py` recomputes paired language-model statistics and cross-checks the latency and clinical aggregate files. See `PROVENANCE.md` for the claim-to-command map and `HARDWARE.md` for timing and determinism boundaries. Manuscripts are maintained on arXiv; this repository contains reproduction material only.

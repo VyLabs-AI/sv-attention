@@ -8,7 +8,7 @@ Apple-silicon GPU. Exact CPU solver checks are portable across macOS and Linux;
 small floating-point differences between BLAS and convex-solver versions are
 expected.
 
-The refreshed deletion reference used macOS 26.5, Python 3.11.14, and NumPy
+The reported deletion reference used macOS 26.5, Python 3.11.14, and NumPy
 2.4.6. At 30 measured uniform-random removals per context size, the per-size
 median deletion latency was 0.30--1.04 ms and the median per-trial
 refit/deletion ratio was 24--223x. Reproduce the raw timing report with:
@@ -21,7 +21,7 @@ python -m experiments.deletion_latency \
   --report outputs/deletion_latency_v2_reference_env.json
 ```
 
-The hardened full-model throughput reference used an Apple M3 Ultra with 32
+The full-model throughput reference used an Apple M3 Ultra with 32
 physical CPU cores and 512 GiB unified memory, macOS 26.5, Python 3.11.14,
 PyTorch 2.12.1, NumPy 2.4.6, and MLX 0.31.2. Run:
 
@@ -69,11 +69,10 @@ the strongest deterministic checks.
 
 The following can vary while remaining valid:
 
-- convex-solver vertex choices for non-unique, near-duplicate optima;
+- coefficient solutions for nearly redundant keys within finite solver tolerances;
 - accelerator reduction order and MLX/Torch kernels;
 - wall-clock throughput;
-- first-use model and corpus downloads;
-- PDFs at the byte level when TeX engines or package bundles differ.
+- first-use model and corpus downloads.
 
-`MANIFEST.sha256` records the public snapshot bytes. Regenerate it with
+`MANIFEST.sha256` records the repository release files. Regenerate it with
 `python reproducibility/build_manifest.py` after intentional source changes.

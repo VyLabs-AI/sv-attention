@@ -2,7 +2,7 @@
 
 The repository-level Apache-2.0 license applies to the original Python code,
 tests, scripts, and project documentation authored for this project. It does
-not replace the licenses of bundled styles, dependencies, models, or datasets.
+not replace the licenses of dependencies, models, or datasets.
 
 ## Algorithms and reference implementations
 
@@ -25,9 +25,9 @@ project-specific one-class extensions are distributed under this repository's
 Apache-2.0 license. Chris Diehl's separate GPL incremental-SVM extension was
 not used for this translation.
 
-## Historical publication assets
+## Bundled evidence
 
-LaTeX styles and manuscript assets were removed from the current repository tip. Their original notices remain with the historical commits. The immutable sequential evidence ZIP retains its own original notices; references there to absent styles describe the original source package, not extra ZIP contents.
+The immutable sequential evidence ZIP retains its original licenses and attribution notices.
 
 ## External dependencies and data
 

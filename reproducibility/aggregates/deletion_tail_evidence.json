@@ -1,0 +1,151 @@
+{
+  "schema_version": 1,
+  "calculation": "Post-processing of saved standalone audit records; no solver execution",
+  "source_file": "forgetting_rigor_v2.json",
+  "source_sha256": "9508ded8b87a65580f61d390c58b999ffe8a7c18731cfd61c0f5318d37e3589c",
+  "source_schema_version": 2,
+  "metric_scope": "Condition/partition and gate-score diagnostics. Does not reconstruct scalar readouts or certify stored states.",
+  "regimes": {
+    "gaussian": {
+      "attempted": 300,
+      "status_counts": {
+        "completed": 300
+      },
+      "completed": 300,
+      "spearman_condition_vs_gate_score": 0.02775186390959899,
+      "spearman_finite_pairs": 300,
+      "spearman_excluded_nonfinite_condition": 0,
+      "partition_agreeing": {
+        "count": 296,
+        "gate_score_median": 2.3435165752427878e-09,
+        "gate_score_worst": 3.3315178858073224e-05
+      },
+      "partition_disagreeing": {
+        "count": 4,
+        "gate_score_median": 0.0013746238648255638,
+        "gate_score_worst": 0.0064225303083970675
+      },
+      "largest_ten": {
+        "count": 10,
+        "partition_disagreeing": 4
+      },
+      "largest_decile": {
+        "definition": "largest ceil(completed/10) gate-score deviations; stable row-order tie break",
+        "count": 30,
+        "condition_median": 32.883483183394404,
+        "remaining_condition_median": 32.32603432308785
+      },
+      "gate_score": {
+        "median": 2.38985742306852e-09,
+        "p95": 1.2196990760993133e-07,
+        "worst": 0.0064225303083970675
+      }
+    },
+    "redundant": {
+      "attempted": 300,
+      "status_counts": {
+        "completed": 300
+      },
+      "completed": 300,
+      "spearman_condition_vs_gate_score": -0.07603817820198001,
+      "spearman_finite_pairs": 300,
+      "spearman_excluded_nonfinite_condition": 0,
+      "partition_agreeing": {
+        "count": 156,
+        "gate_score_median": 3.012667862400953e-08,
+        "gate_score_worst": 4.448546332891379e-05
+      },
+      "partition_disagreeing": {
+        "count": 144,
+        "gate_score_median": 2.6929122497465485e-06,
+        "gate_score_worst": 0.0009578496636093448
+      },
+      "largest_ten": {
+        "count": 10,
+        "partition_disagreeing": 10
+      },
+      "largest_decile": {
+        "definition": "largest ceil(completed/10) gate-score deviations; stable row-order tie break",
+        "count": 30,
+        "condition_median": 217577.1516113971,
+        "remaining_condition_median": 291081.2293333424
+      },
+      "gate_score": {
+        "median": 5.672589710459253e-07,
+        "p95": 0.00016356795215079494,
+        "worst": 0.0009578496636093448
+      }
+    },
+    "mimic": {
+      "attempted": 300,
+      "status_counts": {
+        "completed": 299,
+        "failed": 1
+      },
+      "completed": 299,
+      "spearman_condition_vs_gate_score": -0.1348993288590604,
+      "spearman_finite_pairs": 299,
+      "spearman_excluded_nonfinite_condition": 0,
+      "partition_agreeing": {
+        "count": 293,
+        "gate_score_median": 1.48595047377853e-09,
+        "gate_score_worst": 0.0001531120536163999
+      },
+      "partition_disagreeing": {
+        "count": 6,
+        "gate_score_median": 2.1561043920481637e-05,
+        "gate_score_worst": 0.01120556759532676
+      },
+      "largest_ten": {
+        "count": 10,
+        "partition_disagreeing": 5
+      },
+      "largest_decile": {
+        "definition": "largest ceil(completed/10) gate-score deviations; stable row-order tie break",
+        "count": 30,
+        "condition_median": 16515.53066662533,
+        "remaining_condition_median": 13494.41009809442
+      },
+      "gate_score": {
+        "median": 1.572693253404367e-09,
+        "p95": 1.1975523316332106e-07,
+        "worst": 0.01120556759532676
+      }
+    },
+    "trained": {
+      "attempted": 300,
+      "status_counts": {
+        "completed": 300
+      },
+      "completed": 300,
+      "spearman_condition_vs_gate_score": 0.6014497721474258,
+      "spearman_finite_pairs": 300,
+      "spearman_excluded_nonfinite_condition": 0,
+      "partition_agreeing": {
+        "count": 300,
+        "gate_score_median": 4.480860127387132e-13,
+        "gate_score_worst": 1.0834333430409515e-11
+      },
+      "partition_disagreeing": {
+        "count": 0,
+        "gate_score_median": null,
+        "gate_score_worst": null
+      },
+      "largest_ten": {
+        "count": 10,
+        "partition_disagreeing": 0
+      },
+      "largest_decile": {
+        "definition": "largest ceil(completed/10) gate-score deviations; stable row-order tie break",
+        "count": 30,
+        "condition_median": 1.0623241887762331,
+        "remaining_condition_median": 1.0501520506978526
+      },
+      "gate_score": {
+        "median": 4.480860127387132e-13,
+        "p95": 4.574463030593279e-12,
+        "worst": 1.0834333430409515e-11
+      }
+    }
+  }
+}
